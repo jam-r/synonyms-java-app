@@ -13,10 +13,13 @@ import org.json.simple.parser.JSONParser;
 
 public class Main {
     public static void main(String[] args) {
-        System.out.println("Hello world!");
-
+        System.out.println("Enter a word:");
+        Scanner in = new Scanner(System.in);
+        String word=in.nextLine();
+        in.close();
+        String urlContact = "https://api.dictionaryapi.dev/api/v2/entries/en/"+word;
         try {
-            URL url = new URL("https://api.dictionaryapi.dev/api/v2/entries/en/poor");
+            URL url = new URL(urlContact);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             conn.connect();
@@ -39,8 +42,20 @@ public class Main {
 
                 JSONObject dictionaryData = (JSONObject)dataObject.get(0);
                 JSONArray meaningsData = (JSONArray)dictionaryData.get("meanings");
-                JSONObject synonyms = (JSONObject) meaningsData.get(1);
-                System.out.println(synonyms.get("synonyms"));
+                for(Object o:meaningsData){
+                    if(o instanceof JSONObject ){
+                        JSONObject meaning = (JSONObject) o;
+                        String partOfSpeech = (String) meaning.get("partOfSpeech");
+                        if("adjective".equals(partOfSpeech)){
+                            JSONArray synonyms = (JSONArray) meaning.get("synonyms");
+                            for (Object syn : synonyms) {
+                                if(syn instanceof String){
+                                    System.out.println(syn);
+                                }
+                            }
+                        }
+                    }
+                }
             }else{
                 throw new RuntimeException("code: " + responseCode);
             }
